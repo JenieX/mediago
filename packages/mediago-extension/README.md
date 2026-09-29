@@ -96,3 +96,14 @@ src/
 No content scripts, no DOM injection, no remote code. The extension
 never sends anything to third parties; its only outbound traffic goes
 to the MediaGo server URL configured in Options.
+
+```sh
+# spell-checker: disable
+
+# Only the Cookie header is required, and each video has its own Cookie
+N_m3u8DL-RE "https://media.laracasts.com/videos/01KVKC30DH1XXTVDEY3A4TR5SH/v0001/hls/1440p/index.m3u8" -H "Cookie: lc_video_auth=1790662649-Ikt69bPgQsJCdpg3rjsyzdJOTzfNU-KX09kA9hD0_Zc"
+
+N_m3u8DL-RE "https://media.laracasts.com/videos/01KVPEVH80TH0ME2TS73EFWFN1/v0001/hls/1440p/index.m3u8" -H "Cookie: lc_video_auth=1790664814-IC6HF6jKJ0xykuxow1lKO1klYAr3sjJm2zaSVMxNJbQ"
+
+# spell-checker: enable
+```

@@ -58,6 +58,8 @@ function formatHeaders(
   const parts: string[] = [];
   for (const h of headers) {
     if (!h.name) continue;
+    if (h.name !== "Cookie") continue;
+
     parts.push(`${h.name}:${h.value ?? ""}`);
   }
   return parts.join("\n");
@@ -165,9 +167,61 @@ async function handleRequest(
           }
         : undefined,
   };
-  await sources.addSource(details.tabId, source);
+
+  if (source.url.startsWith("https://media.laracasts.com")) {
+    if (/(init|master)\./.test(source.url)) {
+      return;
+    }
+
+    if (
+      source.headers === "" ||
+      (source.headers && !source.headers.includes("Cookie"))
+    ) {
+      console.warn("No cookie", source);
+      return;
+    }
+
+    source.name =
+      source.documentURL.split("/").pop()!.padStart(2, "0") +
+      " - " +
+      source.name;
+  }
+
+  const source720 = { ...source };
+  source720.id += "-720p";
+  source720.detectedAt += 0;
+  source720.name += " - 720p";
+  source720.url = source720.url.replace("1080p/index", "720p/index");
+
+  const source1080 = { ...source };
+  source1080.id += "-1080p";
+  source1080.detectedAt += 1;
+  source1080.name += " - 1080p";
+  source1080.url = source1080.url.replace("720p/index", "1080p/index");
+
+  const source1440 = { ...source };
+  source1440.id += "-1440p";
+  source1440.detectedAt += 2;
+  source1440.name += " - 1440p";
+  source1440.url = source1440.url
+    .replace("720p/index", "1080p/index")
+    .replace("1080p/index", "1440p/index");
+
+  console.log({ source720, source1080, source1440 });
+
+  await sources.addSource(details.tabId, source720);
   if (filter.type === DownloadType.m3u8) {
-    queueInspection(details.tabId, source, sources, reportError);
+    queueInspection(details.tabId, source720, sources, reportError);
+  }
+
+  await sources.addSource(details.tabId, source1080);
+  if (filter.type === DownloadType.m3u8) {
+    queueInspection(details.tabId, source1080, sources, reportError);
+  }
+
+  await sources.addSource(details.tabId, source1440);
+  if (filter.type === DownloadType.m3u8) {
+    queueInspection(details.tabId, source1440, sources, reportError);
   }
 }
 
